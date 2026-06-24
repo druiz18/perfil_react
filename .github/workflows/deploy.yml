@@ -1,0 +1,45 @@
+name: Desplegar sitio en GitHub Pages
+
+on:
+  push:
+    branches: 'main' # Cambia 'main' por 'master' si es el nombre de tu rama principal
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy_site:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Compilar (Build)
+        run: npm run build
+
+      - name: Subir a GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4
